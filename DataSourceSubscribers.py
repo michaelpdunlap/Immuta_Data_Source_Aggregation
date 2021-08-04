@@ -64,6 +64,8 @@ sourceIDs = sources['hits']
 rowNameList = []
 rowIDList = []
 rowSubsList = []
+lastUpdateList = []
+createList = []
 
 # goal here would be to grep the connection string into the description
 for i in sourceIDs:
@@ -75,25 +77,30 @@ for i in sourceIDs:
             'Content-Type': 'application/json'}
   )
   getASource = response.json()
+  # now let's get last updated
+  response = requests.get(
+    IMMUTA_URL + '/dataSource/' + str(i['id']) + '/activities',
+    headers={'Authorization': authToken,
+            'Content-Type': 'application/json'}
+  )
+  getActivity = response.json()
   # capture the data in lists
   rowName = i['name']
   rowID = i['id']
   rowSubs = getASource['count']
+  for i in getActivity['activities']:
+    rowUpdate = i['updatedAt']
+  #rowUpdate = json_extract(getActivity.json(), 'updatedAt')
+  createdAt = i['createdAt']
   rowNameList.append(rowName)
   rowIDList.append(rowID)
   rowSubsList.append(rowSubs)
+  lastUpdateList.append(rowUpdate)
+  createList.append(createdAt)
         
 # create a data frame to capture source description, ID & number of subscribers from the list captured above
-dataSource = pandas.DataFrame({'SourceID':rowIDList, 'SourceDesc':rowNameList, 'Subscribers':rowSubsList})
+dataSource = pandas.DataFrame({'SourceID':rowIDList, 'SourceDesc':rowNameList, 'Subscribers':rowSubsList, 'Created': createList, 'LastUpdate':lastUpdateList})
 
 print (dataSource)
-
-
-
-
-
-
-
-
 
 
